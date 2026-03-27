@@ -1,0 +1,64 @@
+
+services:
+  open-webui:
+    image: openwebui/open-webui
+    container_name: dockweave-open-webui
+    restart: unless-stopped
+    ports:
+      - "${OPEN_WEBUI_PORT:-3000}:8080"
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - WEBUI_AUTH=${WEBUI_AUTH:-False}
+    volumes:
+      - open-webui-data:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      mcp-bridge:
+        condition: service_started
+
+  mcp-bridge:
+    build:
+      context: ./mcp-bridge
+    container_name: dockweave-mcp-bridge
+    restart: unless-stopped
+    ports:
+      - "${MCP_BRIDGE_PORT:-4000}:4000"
+    env_file:
+      - .env
+    environment:
+      - MCP_BRIDGE_PORT=4000
+      - MCP_TASK_STORAGE=${MCP_TASK_STORAGE:-/data/tasks.json}
+      - MCP_DOCKER_INSPECTION=${MCP_DOCKER_INSPECTION:-true}
+      - WORKER_PREFIX=${WORKER_PREFIX:-dockweave-worker-}
+      - MCP_MAX_LOG_BYTES=${MCP_MAX_LOG_BYTES:-120000}
+      - MCP_MAX_DIFF_BYTES=${MCP_MAX_DIFF_BYTES:-200000}
+    volumes:
+      - bridge-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  worker-1:
+    image: ghcr.io/openai/codex-universal:latest
+    container_name: dockweave-worker-1
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    command: ["sleep", "infinity"]
+    env_file:
+      - .env
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITLAB_TOKEN=${GITLAB_TOKEN:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+    volumes:
+      - worker-1-workspace:/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  open-webui-data:
+  bridge-data:
+  worker-1-workspace:
