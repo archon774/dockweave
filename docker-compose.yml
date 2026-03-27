@@ -2,6 +2,7 @@
 services:
   open-webui:
     image: openwebui/open-webui
+    pull_policy: never
     container_name: dockweave-open-webui
     restart: unless-stopped
     ports:
@@ -37,13 +38,15 @@ services:
       - bridge-data:/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  worker-1:
+  codex-worker:
     image: ghcr.io/openai/codex-universal:latest
-    container_name: dockweave-worker-1
+    platform: linux/amd64
+    pull_policy: never
+    container_name: dockweave-codex-worker
     restart: unless-stopped
     tty: true
     stdin_open: true
-    command: ["sleep", "infinity"]
+    command: ["bash", "-lc", "while :; do read -r -t 3600 _ || true; done"]
     env_file:
       - .env
     environment:
@@ -54,11 +57,11 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
     volumes:
-      - worker-1-workspace:/workspace
+      - codex-worker-workspace:/workspace
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
 volumes:
   open-webui-data:
   bridge-data:
-  worker-1-workspace:
+  codex-worker-workspace:
