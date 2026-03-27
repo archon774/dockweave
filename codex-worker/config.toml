@@ -1,0 +1,31 @@
+[workspace]
+root = "/workspace"
+allow_host_bind_mounts = false
+
+[git]
+auto_fetch = false
+auto_push = false
+require_branch_per_task = true
+
+[network]
+allow_internet = true
+
+[approval]
+require_diff_review = true
+require_explicit_approve_before_commit = true
+require_explicit_approve_before_pr = true
+
+[models]
+provider = "ollama"
+default_model = "gpt-oss:120b"
+base_url = "http://host.docker.internal:11434"
+
+# Environment variables expected to be passed into worker containers.
+[credentials]
+env_passthrough = [
+  "GITHUB_TOKEN",
+  "GITLAB_TOKEN",
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "GOOGLE_API_KEY"
+]
