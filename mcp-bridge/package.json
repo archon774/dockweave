@@ -1,0 +1,17 @@
+{
+    "name": "dockweave-mcp-bridge",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "node src/server.js"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.28.0",
+        "dockerode": "4.0.10",
+        "express": "^4.18.2",
+        "pino": "^9.6.0",
+        "uuid": "11.1.0",
+        "zod": "^3.24.2"
+    }
+}
